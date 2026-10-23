@@ -418,3 +418,8 @@ interface ReceptionistProfile {
   status: string;
   user?: { avatarUrl?: string | null };
 }
+
+export function ProfileLoadingFallback() {
+  const { t } = useI18n();
+  return <div className="p-4">{t("profile.loading")}</div>;
+}

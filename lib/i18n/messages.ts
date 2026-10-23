@@ -4,6 +4,7 @@ export const en = {
   "common.close": "Close",
   "common.saving": "Saving…",
   "common.signOut": "Sign Out",
+  "common.language": "Language",
 
   "login.title": "Receptionist sign in",
   "login.staffId": "Staff ID",
@@ -73,6 +74,7 @@ export const en = {
   "profile.unnamed": "Unnamed receptionist",
   "profile.notFound": "Profile not found",
   "profile.loadError": "Unable to load profile",
+  "profile.loading": "Loading profile…",
   "profile.signOut": "Sign out",
   "profile.signOutCard": "Sign out",
   "profile.signOutHint": "End this session on this device.",
@@ -109,6 +111,7 @@ export const ar: Record<MessageKey, string> = {
   "common.close": "إغلاق",
   "common.saving": "جارٍ الحفظ…",
   "common.signOut": "تسجيل الخروج",
+  "common.language": "اللغة",
 
   "login.title": "تسجيل دخول الاستقبال",
   "login.staffId": "الرقم الوظيفي",
@@ -178,6 +181,7 @@ export const ar: Record<MessageKey, string> = {
   "profile.unnamed": "موظف استقبال بلا اسم",
   "profile.notFound": "الملف الشخصي غير موجود",
   "profile.loadError": "تعذّر تحميل الملف الشخصي",
+  "profile.loading": "جاري تحميل الملف الشخصي…",
   "profile.signOut": "تسجيل الخروج",
   "profile.signOutCard": "تسجيل الخروج",
   "profile.signOutHint": "إنهاء هذه الجلسة على هذا الجهاز.",
