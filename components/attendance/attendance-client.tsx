@@ -14,30 +14,71 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { getReceptionistAttendance, markReceptionistAttendance, getReceptionistSocketTicket } from "@/lib/api/profile";
 import { ApiError } from "@/lib/api/client";
 import { useRealtimeEvent, initializeSocket } from "@/lib/realtime/socket";
+import { useI18n, type MessageKey } from "@/lib/i18n/locale-provider";
+import { toast } from "@/components/ui/toast";
 
 type AttendanceType = "staff" | "teacher" | "student";
+
+type AttendanceStatus = "PRESENT" | "LATE" | "ABSENT" | "PERMITTED" | "EXCUSED" | "LEAVE";
 
 interface AttendanceRow {
   entityId: string;
   fullName: string;
   idLabel: string;
   contextLabel: string;
-  status: "PRESENT" | "LATE" | "ABSENT" | "PERMITTED" | "EXCUSED" | "LEAVE" | null;
+  status: AttendanceStatus | null;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  PRESENT: { label: "Present", variant: "default" },
-  LATE: { label: "Late", variant: "secondary" },
-  ABSENT: { label: "Absent", variant: "destructive" },
-  PERMITTED: { label: "Permitted", variant: "outline" },
-  EXCUSED: { label: "Excused", variant: "outline" },
-  LEAVE: { label: "On Leave", variant: "secondary" },
+const STATUS_VARIANT: Record<AttendanceStatus, "default" | "secondary" | "destructive" | "outline"> = {
+  PRESENT: "default",
+  LATE: "secondary",
+  ABSENT: "destructive",
+  PERMITTED: "outline",
+  EXCUSED: "outline",
+  LEAVE: "secondary",
 };
 
-const TYPE_CONFIG: Record<AttendanceType, { label: string; idLabel: string; contextLabel: string }> = {
-  staff: { label: "Staff", idLabel: "Staff ID", contextLabel: "Position" },
-  teacher: { label: "Teachers", idLabel: "Emp. Number", contextLabel: "Specialization / Dept" },
-  student: { label: "Students", idLabel: "Role Number", contextLabel: "Grade & Section" },
+const STATUS_KEYS: Record<AttendanceStatus, MessageKey> = {
+  PRESENT: "attendance.statusPresent",
+  LATE: "attendance.statusLate",
+  ABSENT: "attendance.statusAbsent",
+  PERMITTED: "attendance.statusPermitted",
+  EXCUSED: "attendance.statusExcused",
+  LEAVE: "attendance.statusLeave",
+};
+
+const TYPE_CONFIG: Record<AttendanceType, {
+  labelKey: MessageKey;
+  idLabelKey: MessageKey;
+  contextLabelKey: MessageKey;
+  searchKey: MessageKey;
+  emptyTitleKey: MessageKey;
+  emptyDescKey: MessageKey;
+}> = {
+  staff: {
+    labelKey: "attendance.tabStaff",
+    idLabelKey: "attendance.idStaff",
+    contextLabelKey: "attendance.ctxPosition",
+    searchKey: "attendance.searchStaff",
+    emptyTitleKey: "attendance.noStaffTitle",
+    emptyDescKey: "attendance.noStaffDesc",
+  },
+  teacher: {
+    labelKey: "attendance.tabTeachers",
+    idLabelKey: "attendance.idEmpNumber",
+    contextLabelKey: "attendance.ctxSpecialization",
+    searchKey: "attendance.searchTeachers",
+    emptyTitleKey: "attendance.noTeachersTitle",
+    emptyDescKey: "attendance.noTeachersDesc",
+  },
+  student: {
+    labelKey: "attendance.tabStudents",
+    idLabelKey: "attendance.idRoleNumber",
+    contextLabelKey: "attendance.ctxGrade",
+    searchKey: "attendance.searchStudents",
+    emptyTitleKey: "attendance.noStudentsTitle",
+    emptyDescKey: "attendance.noStudentsDesc",
+  },
 };
 
 function formatDateForInput(date: Date): string {
@@ -55,6 +96,7 @@ function dateToKey(date: Date): string {
 export function AttendanceClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
 
   // Initial tab from URL or default to staff
   const initialTab = (searchParams.get("tab") as AttendanceType) ?? "staff";
@@ -92,12 +134,12 @@ export function AttendanceClient() {
       setRows(data.rows);
       setError("");
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : "Unable to load attendance");
+      setError(cause instanceof ApiError ? cause.message : t("attendance.loadError"));
       setRows([]);
     } finally {
       setLoading(false);
     }
-  }, [activeTab, date]);
+  }, [activeTab, date, t]);
 
   React.useEffect(() => {
     load();
@@ -155,8 +197,10 @@ export function AttendanceClient() {
       setRows((prev) =>
         prev.map((r) => (r.entityId === entityId ? { ...r, status: row.status } : r)),
       );
-      const message = cause instanceof ApiError ? cause.message : "Failed to mark attendance";
-      alert(message); // Could use a toast instead
+      toast.add({
+        title: cause instanceof ApiError ? cause.message : t("attendance.markError"),
+        type: "error",
+      });
     } finally {
       setPendingIds((prev) => {
         const next = new Set(prev);
@@ -192,8 +236,8 @@ export function AttendanceClient() {
       {/* Header with date picker and search */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => changeDate(-1)} aria-label="Previous day">
-            <ChevronLeft size={16} />
+          <Button variant="outline" size="sm" onClick={() => changeDate(-1)} aria-label={t("attendance.prevDay")}>
+            <ChevronLeft size={16} className="rtl:-scale-x-100" />
           </Button>
           <Input
             type="date"
@@ -201,20 +245,20 @@ export function AttendanceClient() {
             onChange={(e) => setDate(parseDateInput(e.target.value))}
             className="w-[160px]"
           />
-          <Button variant="outline" size="sm" onClick={() => changeDate(1)} aria-label="Next day">
-            <ChevronRight size={16} />
+          <Button variant="outline" size="sm" onClick={() => changeDate(1)} aria-label={t("attendance.nextDay")}>
+            <ChevronRight size={16} className="rtl:-scale-x-100" />
           </Button>
           <Button variant="outline" size="sm" onClick={() => setDate(new Date())}>
-            Today
+            {t("attendance.today")}
           </Button>
         </div>
         <div className="relative max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" aria-hidden />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" aria-hidden />
           <Input
-            placeholder={`Search ${TYPE_CONFIG[activeTab].label.toLowerCase()}…`}
+            placeholder={t(TYPE_CONFIG[activeTab].searchKey)}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="ps-9"
           />
         </div>
       </div>
@@ -224,7 +268,7 @@ export function AttendanceClient() {
         <TabsList className="grid w-full grid-cols-3">
           {(["staff", "teacher", "student"] as AttendanceType[]).map((type) => (
             <TabsTrigger key={type} value={type} className="text-sm">
-              {TYPE_CONFIG[type].label}
+              {t(TYPE_CONFIG[type].labelKey)}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -279,7 +323,8 @@ interface AttendanceTableProps {
 }
 
 function AttendanceTable({ rows, loading, error, type, onMark, isPending }: AttendanceTableProps) {
-  const { label, idLabel, contextLabel } = TYPE_CONFIG[type];
+  const { t } = useI18n();
+  const config = TYPE_CONFIG[type];
 
   if (loading) {
     return (
@@ -299,7 +344,7 @@ function AttendanceTable({ rows, loading, error, type, onMark, isPending }: Atte
       <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
         <span>{error}</span>
         <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-          Retry
+          {t("common.retry")}
         </Button>
       </div>
     );
@@ -308,46 +353,51 @@ function AttendanceTable({ rows, loading, error, type, onMark, isPending }: Atte
   if (rows.length === 0) {
     return (
       <EmptyState
-        title={`No ${label.toLowerCase()} found`}
-        description={`No active ${label.toLowerCase()} match the current filters.`}
+        title={t(config.emptyTitleKey)}
+        description={t(config.emptyDescKey)}
         action={<TrendingUp size={20} />}
       />
     );
   }
 
+  const typeLabel = t(config.labelKey);
+  const cardTitle = t(
+    rows.length === 1 ? "attendance.cardTitleOne" : "attendance.cardTitleMany",
+    { type: typeLabel, count: rows.length },
+  );
+
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">{label} Attendance — {rows.length} entries</CardTitle>
+        <CardTitle className="text-base">{cardTitle}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[280px]">Full Name</TableHead>
-                <TableHead className="w-[140px]">{idLabel}</TableHead>
-                <TableHead>{contextLabel}</TableHead>
-                <TableHead className="w-[360px] text-right">Actions</TableHead>
+                <TableHead className="w-[280px]">{t("attendance.colName")}</TableHead>
+                <TableHead className="w-[140px]">{t(config.idLabelKey)}</TableHead>
+                <TableHead>{t(config.contextLabelKey)}</TableHead>
+                <TableHead className="w-[360px] text-end">{t("attendance.colActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((row) => {
-                const statusInfo = row.status ? STATUS_CONFIG[row.status] : null;
                 const pending = isPending(row.entityId);
                 return (
                   <TableRow key={row.entityId}>
                     <TableCell className="font-medium">{row.fullName}</TableCell>
-                    <TableCell className="font-mono text-xs">{row.idLabel}</TableCell>
+                    <TableCell className="font-mono text-xs" dir="ltr">{row.idLabel}</TableCell>
                     <TableCell className="text-muted-foreground">{row.contextLabel}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1.5">
-                        {statusInfo && (
-                          <Badge variant={statusInfo.variant} className="mr-2">
-                            {statusInfo.label}
+                        {row.status && (
+                          <Badge variant={STATUS_VARIANT[row.status]} className="me-2">
+                            {t(STATUS_KEYS[row.status])}
                           </Badge>
                         )}
-                        <div className="flex gap-1" role="group" aria-label={`Mark ${row.fullName} attendance`}>
+                        <div className="flex gap-1" role="group" aria-label={t("attendance.markGroupAria", { name: row.fullName })}>
                           <Button
                             variant={row.status === "PRESENT" ? "default" : "outline"}
                             size="sm"
@@ -356,7 +406,7 @@ function AttendanceTable({ rows, loading, error, type, onMark, isPending }: Atte
                             disabled={pending}
                             aria-pressed={row.status === "PRESENT"}
                           >
-                            P
+                            {t("attendance.markPresentShort")}
                           </Button>
                           <Button
                             variant={row.status === "LATE" ? "default" : "outline"}
@@ -366,7 +416,7 @@ function AttendanceTable({ rows, loading, error, type, onMark, isPending }: Atte
                             disabled={pending}
                             aria-pressed={row.status === "LATE"}
                           >
-                            L
+                            {t("attendance.markLateShort")}
                           </Button>
                           <Button
                             variant={row.status === "ABSENT" ? "default" : "outline"}
@@ -376,7 +426,7 @@ function AttendanceTable({ rows, loading, error, type, onMark, isPending }: Atte
                             disabled={pending}
                             aria-pressed={row.status === "ABSENT"}
                           >
-                            A
+                            {t("attendance.markAbsentShort")}
                           </Button>
                           <Button
                             variant={row.status === "PERMITTED" ? "default" : "outline"}
@@ -386,7 +436,7 @@ function AttendanceTable({ rows, loading, error, type, onMark, isPending }: Atte
                             disabled={pending}
                             aria-pressed={row.status === "PERMITTED" || row.status === "EXCUSED"}
                           >
-                            Perm
+                            {t("attendance.markPermittedShort")}
                           </Button>
                         </div>
                       </div>

@@ -40,18 +40,38 @@ export interface ReceptionistProfile {
   user?: { avatarUrl?: string | null };
 }
 
-export async function changeAuthPassword(payload: { currentPassword: string; newPassword: string }): Promise<void> {
+export async function changeAuthPassword(
+  payload: { currentPassword: string; newPassword: string },
+): Promise<{ changed: boolean }> {
   const { receptionistApiFetch } = await import("./client");
-  return receptionistApiFetch("/receptionist/password/change", {
+  // Same role-agnostic auth endpoints every other portal uses; there is no
+  // receptionist-specific /me route on the backend.
+  return receptionistApiFetch<{ changed: boolean }>("/auth/me/password", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export async function updateAuthMe(payload: { firstName: string; lastName: string; phone: string; avatarUrl: string }): Promise<void> {
+export interface AuthMe {
+  id: string;
+  email?: string | null;
+  firstName: string;
+  lastName?: string | null;
+  phone?: string | null;
+  avatarUrl?: string | null;
+}
+
+export async function getAuthMe(): Promise<AuthMe> {
   const { receptionistApiFetch } = await import("./client");
-  return receptionistApiFetch("/receptionist/me", {
-    method: "PATCH",
+  return receptionistApiFetch<AuthMe>("/auth/me");
+}
+
+export async function updateAuthMe(
+  payload: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string },
+): Promise<AuthMe> {
+  const { receptionistApiFetch } = await import("./client");
+  return receptionistApiFetch<AuthMe>("/auth/me", {
+    method: "PUT",
     body: JSON.stringify(payload),
   });
 }

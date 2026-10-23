@@ -7,18 +7,20 @@ import {
   UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n, type MessageKey } from "@/lib/i18n/locale-provider";
 
-const ITEMS = [
-  { href: "/profile", label: "Profile", icon: UserRound },
-  { href: "/attendance", label: "Attendance", icon: CalendarCheck },
+const ITEMS: { href: string; labelKey: MessageKey; icon: typeof CalendarCheck }[] = [
+  { href: "/profile", labelKey: "nav.profile", icon: UserRound },
+  { href: "/attendance", labelKey: "nav.attendance", icon: CalendarCheck },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <nav
-      aria-label="Receptionist portal"
+      aria-label={t("nav.navLabel")}
       className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-primary print:hidden md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
@@ -37,7 +39,7 @@ export function BottomNav() {
               )}
             >
               <Icon size={20} aria-hidden />
-              <span className="w-full truncate text-center leading-tight">{item.label}</span>
+              <span className="w-full truncate text-center leading-tight">{t(item.labelKey)}</span>
             </Link>
           );
         })}

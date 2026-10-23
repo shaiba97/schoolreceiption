@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/portal/bottom-nav";
+import { PortalName } from "@/components/portal/portal-name";
 import { TenantLockedNotice } from "@/components/portal/tenant-locked-notice";
 import { Sidebar } from "@/components/portal/sidebar";
 
@@ -9,7 +10,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <TenantLockedNotice />
       <header className="hidden shrink-0 print:hidden md:block md:w-56">
         <div className="px-3 pb-2 pt-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Receptionist Portal</p>
+          <PortalName />
         </div>
         <Sidebar />
       </header>

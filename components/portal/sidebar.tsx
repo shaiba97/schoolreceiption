@@ -9,17 +9,19 @@ import {
   UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n, type MessageKey } from "@/lib/i18n/locale-provider";
 
-const ITEMS = [
-  { href: "/attendance", label: "Attendance", icon: CalendarCheck },
-  { href: "/profile", label: "Profile", icon: UserRound },
+const ITEMS: { href: string; labelKey: MessageKey; icon: typeof CalendarCheck }[] = [
+  { href: "/attendance", labelKey: "nav.attendance", icon: CalendarCheck },
+  { href: "/profile", labelKey: "nav.profile", icon: UserRound },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
-    <nav aria-label="Receptionist portal" className="flex flex-col gap-1 overflow-visible p-2">
+    <nav aria-label={t("nav.navLabel")} className="flex flex-col gap-1 overflow-visible p-2">
       {ITEMS.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
@@ -36,7 +38,7 @@ export function Sidebar() {
             )}
           >
             <Icon size={16} aria-hidden />
-            <span className="whitespace-nowrap">{item.label}</span>
+            <span className="whitespace-nowrap">{t(item.labelKey)}</span>
           </Link>
         );
       })}
