@@ -21,7 +21,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label={t("nav.navLabel")}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-primary print:hidden md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-sidebar-border bg-sidebar text-sidebar-foreground print:hidden md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto grid w-full max-w-6xl grid-cols-2 px-1 pt-1">
@@ -34,10 +34,15 @@ export function BottomNav() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-1 py-2 text-[10px] font-medium transition-colors",
-                active ? "text-primary-foreground" : "text-primary-foreground/70 hover:text-primary-foreground",
+                "relative flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-1 py-2 text-[10px] font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring",
+                active
+                  ? "text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/60 hover:text-sidebar-foreground",
               )}
             >
+              {active && (
+                <span aria-hidden className="absolute inset-x-6 top-0 h-0.5 rounded-full bg-sidebar-ring" />
+              )}
               <Icon size={20} aria-hidden />
               <span className="w-full truncate text-center leading-tight">{t(item.labelKey)}</span>
             </Link>

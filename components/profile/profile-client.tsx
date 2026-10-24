@@ -21,7 +21,11 @@ import { ApiError } from "@/lib/api/client";
 import { useI18n } from "@/lib/i18n/locale-provider";
 
 function statusBadge(status: string) {
-  return <Badge variant={status === "ACTIVE" ? "default" : "secondary"}>{status}</Badge>;
+  return status === "ACTIVE" ? (
+    <Badge variant="success">{status}</Badge>
+  ) : (
+    <Badge variant="warning">{status}</Badge>
+  );
 }
 
 // Shift configuration - role-based constant since no shift data in DB
@@ -43,7 +47,7 @@ function AvatarCircle({ name, photoUrl }: { name: string; photoUrl?: string | nu
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
   return (
-    <span aria-hidden className="inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-muted text-lg font-semibold">
+    <span aria-hidden className="inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-semibold text-accent-foreground">
       {initials || "?"}
     </span>
   );
@@ -159,7 +163,7 @@ export function ProfileClient() {
                   </span>
                 )}
                 {statusBadge(profile.status)}
-                <Badge variant="outline">{t("profile.activeDuty")}</Badge>
+                <Badge variant="outline" className="border-transparent bg-accent text-accent-foreground">{t("profile.activeDuty")}</Badge>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("profile.employeeOf", { number: profile.staffNumber ?? "—", shift: shiftLabel })}

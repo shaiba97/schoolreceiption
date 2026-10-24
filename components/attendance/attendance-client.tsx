@@ -29,12 +29,12 @@ interface AttendanceRow {
   status: AttendanceStatus | null;
 }
 
-const STATUS_VARIANT: Record<AttendanceStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  PRESENT: "default",
-  LATE: "secondary",
+const STATUS_VARIANT: Record<AttendanceStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info"> = {
+  PRESENT: "success",
+  LATE: "warning",
   ABSENT: "destructive",
-  PERMITTED: "outline",
-  EXCUSED: "outline",
+  PERMITTED: "info",
+  EXCUSED: "info",
   LEAVE: "secondary",
 };
 
