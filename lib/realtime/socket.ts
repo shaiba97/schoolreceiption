@@ -8,7 +8,7 @@ let connectPromise: Promise<Socket> | null = null;
 
 export function getSocket(): Socket {
   if (!socketInstance) {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000";
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "https://schoolbackend-7n8a.onrender.com";
     socketInstance = io(socketUrl, {
       auth: { token: "" },
       transports: ["websocket", "polling"],
