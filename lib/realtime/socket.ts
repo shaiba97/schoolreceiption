@@ -8,7 +8,7 @@ let connectPromise: Promise<Socket> | null = null;
 
 export function getSocket(): Socket {
   if (!socketInstance) {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "https://schoolbackend-7n8a.onrender.com";
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "https://schoolbackend-gilt.vercel.app";
     socketInstance = io(socketUrl, {
       auth: { token: "" },
       transports: ["websocket", "polling"],
